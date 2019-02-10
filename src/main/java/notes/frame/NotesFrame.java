@@ -48,34 +48,6 @@ public class NotesFrame extends JFrame {
         this.setVisible(true);
     }
 
-//    private boolean checkForExistingNotes(){
-//        ArrayList<File> files = getDirectoryFiles();
-//        if(files.size() != 0){
-//            String content = "";
-//            for(File file : files){
-//                if(file.getName().substring(file.getName().length() - 3).equals("txt")){
-//                    try {
-//                        BufferedReader reader = new BufferedReader(new FileReader(file.getPath()));
-//                        String line;
-//                        while((line = reader.readLine()) != null){
-//                            content += line + "\n";
-//                        }
-//                    } catch (FileNotFoundException exception) {
-//                        exception.printStackTrace();
-//                    } catch (IOException exception) {
-//                        exception.printStackTrace();
-//                    }
-//                    area.setBackground(new Color(0xB2C0BE));
-//                    area.append(content);
-//                    pane.add(Character.toUpperCase(file.getName().charAt(0)) + file.getName().substring(1, file.getName().length() - 4), area);
-//                }
-//                content = "";
-//            }
-//            return true;
-//        }
-//        return false;
-//    }
-
     private JTextArea constructTextArea(){
         NotesArea area = new NotesArea();
         area.generate();

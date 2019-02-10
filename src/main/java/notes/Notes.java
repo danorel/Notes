@@ -1,14 +1,24 @@
 package notes;
 
-import file.FileManager;
 import notes.frame.NotesFrame;
 
 public class Notes {
+    private static Database database;
     private NotesFrame frame;
-    private FileManager fileManager;
 
     public Notes(){
+        database = new Database();
         frame = new NotesFrame();
         frame.render();
+    }
+
+    public Notes(String path){
+        database = new Database(path);
+        frame = new NotesFrame();
+        frame.render();
+    }
+
+    public static Database getDatabase(){
+        return database;
     }
 }
