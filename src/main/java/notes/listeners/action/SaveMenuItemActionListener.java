@@ -13,7 +13,7 @@
 //    public void actionPerformed(ActionEvent event) {
 //        BufferedWriter writer;
 //        ArrayList<File> files = getDirectoryFiles();
-//        boolean fileNotExists = true;
+////        boolean fileNotExists = true;
 //        File existingFile = null;
 //        for (File file : files) {
 //            if ((file.getName().substring(0, 1).toUpperCase() + file.getName().substring(1, file.getName().length() - 4)).equals(pane.getTitleAt(pane.getSelectedIndex()))) {

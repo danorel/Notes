@@ -1,5 +1,7 @@
 package notes.menu;
 
+import notes.listeners.action.*;
+
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -11,13 +13,11 @@ public class MenuGenerator {
     private JMenuBar menuBar;
     private ArrayList<JMenu> menus;
     private ArrayList<JMenuItem> menuItems;
-    private ArrayList<ActionListener> actionListeners;
 
     public MenuGenerator() {
         menuBar = new JMenuBar();
         menus = new ArrayList<>();
         menuItems = new ArrayList<>();
-        actionListeners = new ArrayList<>();
     }
 
     public void generate(){
@@ -53,6 +53,22 @@ public class MenuGenerator {
         return this;
     }
 
+    public JMenuBar getMenuBar() {
+        return menuBar;
+    }
+
+    public JMenuItem getMenuItem(String fieldName){
+        JMenuItem []items = new JMenuItem[1];
+        menuItems
+                .forEach(field -> {
+                    if(field.getText().equals(fieldName)){
+                        items[0] = field;
+                    }
+                });
+        return items[0];
+    }
+
+    /*
     public MenuGenerator addActionListener(String fieldName, String listenerName){
         menuItems
                 .forEach(field -> {
@@ -63,10 +79,6 @@ public class MenuGenerator {
         return this;
     }
 
-    public JMenuBar getMenuBar() {
-        return menuBar;
-    }
-
     private ActionListener getActionListener(String listenerName){
         for (ActionListener listener : actionListeners) {
             if (listener.getClass().getSimpleName().equals(listenerName)) {
@@ -75,4 +87,5 @@ public class MenuGenerator {
         }
         return null;
     }
+    */
 }

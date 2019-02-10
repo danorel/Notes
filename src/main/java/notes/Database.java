@@ -2,7 +2,7 @@ package notes;
 
 import file.FileGenerator;
 
-import java.nio.file.Files;
+import java.io.File;
 import java.util.ArrayList;
 
 public class Database {
@@ -15,24 +15,22 @@ public class Database {
     /*
         All the notes created are located inside the ArrayList
      */
-    private static ArrayList<Files> notes;
+    public static ArrayList<File> notes = new ArrayList<>();
 
     public Database(){
-        notes = new ArrayList<>();
         FileGenerator.createDirectory(path);
     }
 
     public Database(String path){
         this.path = path;
         FileGenerator.createDirectory(this.path);
-        notes = new ArrayList<>();
     }
 
     public static String getPath() {
         return path;
     }
 
-    public static ArrayList<Files> getExistingNotes() {
+    public static ArrayList<File> getExistingNotes() {
         return notes.size() == 0 ? null : notes;
     }
 }
