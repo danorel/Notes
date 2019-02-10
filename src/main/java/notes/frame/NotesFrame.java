@@ -76,9 +76,7 @@ public class NotesFrame extends JFrame {
         menuGenerator.getMenuItem("Open")
                 .addActionListener(event -> {
                     JFileChooser fileChooser = new JFileChooser();
-                    Frame innerFrame = new JFrame();
-                    innerFrame.setLocationRelativeTo(this);
-                    if (fileChooser.showOpenDialog(innerFrame) == JFileChooser.APPROVE_OPTION) {
+                    if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                         File file = fileChooser.getSelectedFile();
                         try {
                             BufferedReader reader = new BufferedReader(new FileReader(file.getPath()));
@@ -106,14 +104,17 @@ public class NotesFrame extends JFrame {
                     area.generate();
                     tabbedPane.add(area);
                     tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
+                    String title = JOptionPane.showInputDialog("Define the title for the note");
+                    tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(), (title.substring(0, 1).toUpperCase() + title.substring(1).toLowerCase()));
                 });
         menuGenerator.getMenuItem("Delete")
                 .addActionListener(event -> {
                     Objects.requireNonNull(Database.getExistingNotes())
                             .forEach(file -> {
-                                if(file.getName().equals(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))){
+                                String []tokens = file.getName().split("[./]");
+                                if((tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase()).equals(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))){
                                     tabbedPane.remove(tabbedPane.getComponentAt(tabbedPane.getSelectedIndex()));
-                                    Database.getExistingNotes().remove(file);
+                                    Database.notes.remove(file);
                                 }
                             });
                 });
@@ -123,11 +124,20 @@ public class NotesFrame extends JFrame {
                 });
         menuGenerator.getMenuItem("Rename")
                 .addActionListener(event -> {
+                    String title = JOptionPane.showInputDialog("Define the title for the note");
                     Objects.requireNonNull(Database.getExistingNotes())
                             .forEach(file -> {
-                                if(file.getName().equals(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))){
-                                    tabbedPane.getTabComponentAt(tabbedPane.getSelectedIndex()).requestFocus();
-                                    System.out.println(tabbedPane.getTabComponentAt(tabbedPane.getSelectedIndex()).getName());
+                                String []tokens = file.getName().split("[./]");
+                                if((tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase()).equals(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))){
+                                    file = new File(Database.getPath() + "/" + title);
+                                    try {
+                                        BufferedWriter writer = new BufferedWriter(new FileWriter(Database.getPath() + "/" + title.toLowerCase()));
+                                        writer.write(((NotesArea)tabbedPane.getComponentAt(tabbedPane.getSelectedIndex())).getText());
+                                        writer.close();
+                                    } catch (IOException exception) {
+                                        exception.printStackTrace();
+                                    }
+                                    tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(), (title.substring(0, 1).toUpperCase() + title.substring(1).toLowerCase()));
                                 }
                             });
                 });
@@ -136,7 +146,8 @@ public class NotesFrame extends JFrame {
                     final boolean[] isFound = { false };
                     Objects.requireNonNull(Database.getExistingNotes())
                             .forEach(file -> {
-                                if(file.getName().equals(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))){
+                                String []tokens = file.getName().split("[./]");
+                                if(tokens[0].equals(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))){
                                     try {
                                         NotesArea area = ((NotesArea) tabbedPane.getComponentAt(tabbedPane.getSelectedIndex()));
                                         area.generate();
@@ -150,7 +161,7 @@ public class NotesFrame extends JFrame {
                                 }
                             });
                     if(!isFound[0]){
-                        File file = new File(Database.getPath() + "/" + tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
+                        File file = new File(Database.getPath() + "/" + tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()).toLowerCase() + ".txt");
                         try {
                             BufferedWriter writer = new BufferedWriter(new FileWriter(file.getPath()));
                             writer.write(((NotesArea) tabbedPane.getComponentAt(tabbedPane.getSelectedIndex())).getText());
@@ -169,8 +180,8 @@ public class NotesFrame extends JFrame {
         Database.notes = FileGenerator.getFilesFromDirectory(Database.getPath());
         Objects.requireNonNull(Database.getExistingNotes())
                 .forEach(file -> {
-                    String []parts = file.getName().split("\\.|/");
-                    NotesArea area = new NotesArea(parts[0].substring(0, 1).toUpperCase() + parts[0].substring(1).toLowerCase());
+                    String []tokens = file.getName().split("[./]");
+                    NotesArea area = new NotesArea(tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase());
                     area.generate();
                     StringBuilder content = new StringBuilder();
                     try {
