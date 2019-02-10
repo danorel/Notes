@@ -1,28 +1,27 @@
-package notes.frame;
+package notes.components.frame;
 
 import file.FileGenerator;
 import notes.Database;
-import notes.area.NotesArea;
-import notes.listeners.action.ListenerConstants;
-import notes.menu.MenuGenerator;
+import notes.components.pane.PaneGenerator;
+import notes.components.view.ViewArea;
+import notes.components.menu.MenuGenerator;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class NotesFrame extends JFrame {
+public class ViewFrame extends JFrame {
     // Frame width and Frame height
     private static final int WIDTH = 640;
     private static final int HEIGHT = 480;
 
-    // Frame panels as containers of the content and tabbed tabbedPane
-    private JPanel main;
-    private JTabbedPane tabbedPane;
+    // Frame panels as containers of the content and tabbed jTabbedPane
+    private JPanel jPanel;
+    private JTabbedPane jTabbedPane;
 
-    public NotesFrame(){
+    public ViewFrame(){
         this.setTitle("Dan's Notes");
         this.setSize(WIDTH, HEIGHT);
         this.setLocationRelativeTo(null);
@@ -30,32 +29,19 @@ public class NotesFrame extends JFrame {
     }
 
     public void render(){
-        // Menu bar and embedded notes.menu items initialization
-        JMenuBar menuBar = constructMenuBar();
-        // Main panel initialization
-        main = new JPanel();
-        // Tabbed tabbedPane initialization
-        tabbedPane = new JTabbedPane();
-
+        jPanel = new JPanel();
+        jTabbedPane = new JTabbedPane();
+        JMenuBar jMenuBar = constructMenuBar();
         checkupForNotesInDatabase();
-        // Adding the tabbed tabbedPane to the main panel
-        main.add(tabbedPane, BorderLayout.CENTER);
 
-        // Adding the panels and notes.menu to the frame
-        this.add(main, BorderLayout.CENTER);
-        this.add(menuBar, BorderLayout.NORTH);
+        // Adding the tabbed jTabbedPane to the jPanel panel
+        jPanel.add(jTabbedPane, BorderLayout.CENTER);
+
+        // Adding the panels and menu to the frame
+        this.add(jPanel, BorderLayout.CENTER);
+        this.add(jMenuBar, BorderLayout.NORTH);
         this.setVisible(true);
     }
-
-    private JTextArea constructTextArea(){
-        NotesArea area = new NotesArea();
-        area.generate();
-        return area;
-    }
-
-//    private JTabbedPane constructTabbedPane(){
-//
-//    }
 
     private JMenuBar constructMenuBar(){
         MenuGenerator menuGenerator = new MenuGenerator();
@@ -71,6 +57,22 @@ public class NotesFrame extends JFrame {
                 .defineMenuItemTo("Tools", "Delete")
                 .generate();
 
+        menuGenerator.getMenuItem("Preferences")
+                .addActionListener(event -> {
+                    JFrame innerJFrame = new JFrame("Preferences");
+                    innerJFrame.setSize(WIDTH / 4 * 3, HEIGHT / 4 * 3);
+                    innerJFrame.setLocationRelativeTo(this);
+                    JPanel innerJPanel = new JPanel();
+                    PaneGenerator paneGenerator = new PaneGenerator();
+                    paneGenerator
+                            .addTab("Font Color", new JTextArea(15, 20))
+                            .addTab("Font Size", new JTextArea(15, 20))
+                            .addTab("BGR Color", new JTextArea(15, 20))
+                            .generate();
+                    innerJPanel.add(paneGenerator.getTabbedPane(), BorderLayout.CENTER);
+                    innerJFrame.add(innerJPanel, BorderLayout.CENTER);
+                    innerJFrame.setVisible(true);
+                });
         menuGenerator.getMenuItem("Close")
                 .addActionListener(event -> System.exit(0));
         menuGenerator.getMenuItem("Open")
@@ -81,18 +83,16 @@ public class NotesFrame extends JFrame {
                         try {
                             BufferedReader reader = new BufferedReader(new FileReader(file.getPath()));
                             String line;
-                            String content = "";
+                            StringBuilder content = new StringBuilder();
                             while((line = reader.readLine()) != null){
-                                content += line + "\n";
+                                content.append(line).append("\n");
                             }
-                            NotesArea area = new NotesArea();
+                            ViewArea area = new ViewArea();
                             area.generate();
-                            area.append(content);
+                            area.append(content.toString());
                             area.setBackground(area.getBackground());
-                            tabbedPane.add("Note", area);
+                            jTabbedPane.add("Note", area);
                             reader.close();
-                        } catch (FileNotFoundException exception) {
-                            exception.printStackTrace();
                         } catch (IOException exception) {
                             exception.printStackTrace();
                         }
@@ -100,27 +100,27 @@ public class NotesFrame extends JFrame {
                 });
         menuGenerator.getMenuItem("Create")
                 .addActionListener(event -> {
-                    NotesArea area = new NotesArea();
+                    ViewArea area = new ViewArea();
                     area.generate();
-                    tabbedPane.add(area);
-                    tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
+                    jTabbedPane.add(area);
+                    jTabbedPane.setSelectedIndex(jTabbedPane.getTabCount() - 1);
                     String title = JOptionPane.showInputDialog("Define the title for the note");
-                    tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(), (title.substring(0, 1).toUpperCase() + title.substring(1).toLowerCase()));
+                    jTabbedPane.setTitleAt(jTabbedPane.getSelectedIndex(), (title.substring(0, 1).toUpperCase() + title.substring(1).toLowerCase()));
                 });
         menuGenerator.getMenuItem("Delete")
                 .addActionListener(event -> {
-                    Objects.requireNonNull(Database.getExistingNotes())
-                            .forEach(file -> {
-                                String []tokens = file.getName().split("[./]");
-                                if((tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase()).equals(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))){
-                                    tabbedPane.remove(tabbedPane.getComponentAt(tabbedPane.getSelectedIndex()));
-                                    Database.notes.remove(file);
-                                }
-                            });
+                    for (File file : Objects.requireNonNull(Database.getExistingNotes())) {
+                        String[] tokens = file.getName().split("[./]");
+                        if ((tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase()).equals(jTabbedPane.getTitleAt(jTabbedPane.getSelectedIndex()))) {
+                            file.delete();
+                            jTabbedPane.remove(jTabbedPane.getComponentAt(jTabbedPane.getSelectedIndex()));
+                            break;
+                        }
+                    }
                 });
         menuGenerator.getMenuItem("Edit")
                 .addActionListener(event -> {
-                    ((JTextArea) tabbedPane.getComponentAt(tabbedPane.getSelectedIndex())).setEditable(true);
+                    ((JTextArea) jTabbedPane.getComponentAt(jTabbedPane.getSelectedIndex())).setEditable(true);
                 });
         menuGenerator.getMenuItem("Rename")
                 .addActionListener(event -> {
@@ -128,16 +128,16 @@ public class NotesFrame extends JFrame {
                     Objects.requireNonNull(Database.getExistingNotes())
                             .forEach(file -> {
                                 String []tokens = file.getName().split("[./]");
-                                if((tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase()).equals(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))){
+                                if((tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase()).equals(jTabbedPane.getTitleAt(jTabbedPane.getSelectedIndex()))){
                                     file = new File(Database.getPath() + "/" + title);
                                     try {
                                         BufferedWriter writer = new BufferedWriter(new FileWriter(Database.getPath() + "/" + title.toLowerCase()));
-                                        writer.write(((NotesArea)tabbedPane.getComponentAt(tabbedPane.getSelectedIndex())).getText());
+                                        writer.write(((ViewArea) jTabbedPane.getComponentAt(jTabbedPane.getSelectedIndex())).getText());
                                         writer.close();
                                     } catch (IOException exception) {
                                         exception.printStackTrace();
                                     }
-                                    tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(), (title.substring(0, 1).toUpperCase() + title.substring(1).toLowerCase()));
+                                    jTabbedPane.setTitleAt(jTabbedPane.getSelectedIndex(), (title.substring(0, 1).toUpperCase() + title.substring(1).toLowerCase()));
                                 }
                             });
                 });
@@ -147,9 +147,9 @@ public class NotesFrame extends JFrame {
                     Objects.requireNonNull(Database.getExistingNotes())
                             .forEach(file -> {
                                 String []tokens = file.getName().split("[./]");
-                                if(tokens[0].equals(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()))){
+                                if((tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase()).equals(jTabbedPane.getTitleAt(jTabbedPane.getSelectedIndex()))){
                                     try {
-                                        NotesArea area = ((NotesArea) tabbedPane.getComponentAt(tabbedPane.getSelectedIndex()));
+                                        ViewArea area = ((ViewArea) jTabbedPane.getComponentAt(jTabbedPane.getSelectedIndex()));
                                         area.generate();
                                         BufferedWriter writer = new BufferedWriter(new FileWriter(file.getPath()));
                                         writer.write(area.getText());
@@ -161,17 +161,17 @@ public class NotesFrame extends JFrame {
                                 }
                             });
                     if(!isFound[0]){
-                        File file = new File(Database.getPath() + "/" + tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()).toLowerCase() + ".txt");
+                        File file = new File(Database.getPath() + "/" + jTabbedPane.getTitleAt(jTabbedPane.getSelectedIndex()).toLowerCase() + ".txt");
                         try {
                             BufferedWriter writer = new BufferedWriter(new FileWriter(file.getPath()));
-                            writer.write(((NotesArea) tabbedPane.getComponentAt(tabbedPane.getSelectedIndex())).getText());
+                            writer.write(((ViewArea) jTabbedPane.getComponentAt(jTabbedPane.getSelectedIndex())).getText());
                             writer.close();
                         } catch (IOException exception) {
                             exception.printStackTrace();
                         }
                         Database.getExistingNotes().add(file);
                     }
-                    ((NotesArea) tabbedPane.getComponentAt(tabbedPane.getSelectedIndex())).setEditable(false);
+                    ((ViewArea) jTabbedPane.getComponentAt(jTabbedPane.getSelectedIndex())).setEditable(false);
                 });
         return menuGenerator.getMenuBar();
     }
@@ -181,7 +181,7 @@ public class NotesFrame extends JFrame {
         Objects.requireNonNull(Database.getExistingNotes())
                 .forEach(file -> {
                     String []tokens = file.getName().split("[./]");
-                    NotesArea area = new NotesArea(tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase());
+                    ViewArea area = new ViewArea(tokens[0].substring(0, 1).toUpperCase() + tokens[0].substring(1).toLowerCase());
                     area.generate();
                     StringBuilder content = new StringBuilder();
                     try {
@@ -195,7 +195,7 @@ public class NotesFrame extends JFrame {
                         exception.printStackTrace();
                     }
                     area.append(content.toString());
-                    tabbedPane.add(area);
+                    jTabbedPane.add(area);
                 });
     }
 }

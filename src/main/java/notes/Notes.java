@@ -1,20 +1,20 @@
 package notes;
 
-import notes.frame.NotesFrame;
+import notes.components.frame.ViewFrame;
 
 public class Notes {
     private static Database database;
-    private NotesFrame frame;
+    private ViewFrame frame;
 
     public Notes(){
         database = new Database();
-        frame = new NotesFrame();
+        frame = new ViewFrame();
         frame.render();
     }
 
     public Notes(String path){
         database = new Database(path);
-        frame = new NotesFrame();
+        frame = new ViewFrame();
         frame.render();
     }
 
