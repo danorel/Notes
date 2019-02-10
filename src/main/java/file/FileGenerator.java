@@ -1,8 +1,10 @@
 package file;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class FileGenerator implements FileManager {
     private String position = "";
@@ -26,8 +28,14 @@ public class FileGenerator implements FileManager {
                 });
     }
 
+    @Override
+    public void createDirectory(String name) {
+        File directory = new File(name);
+        directory.mkdir();
+    }
+
     public String readFile(String src) {
-        String content = null;
+        String content = "";
         try {
             BufferedReader reader = new BufferedReader(new FileReader(src));
             String line;
@@ -49,5 +57,21 @@ public class FileGenerator implements FileManager {
         } catch (IOException exception) {
             exception.printStackTrace();
         }
+    }
+
+    @Override
+    public ArrayList<File> getFilesFromDirectory(String src) {
+        return new ArrayList<> (Arrays.asList(Objects.requireNonNull(new File(src).listFiles())));
+    }
+
+    @Override
+    public ArrayList<String> getFilenamesFromDirectory(String src) {
+        ArrayList<String> filenames = new ArrayList<>();
+        getFilesFromDirectory(src)
+                .forEach(file -> {
+                    filenames.add(file.getName());
+                    System.out.println(file.getName());
+                });
+        return filenames;
     }
 }

@@ -9,6 +9,6 @@ public class Notes {
 
     public Notes(){
         frame = new NotesFrame();
-        frame.visualize();
+        frame.render();
     }
 }

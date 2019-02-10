@@ -21,7 +21,7 @@ public class MenuGenerator {
     }
 
     public void generate(){
-        menus.stream()
+        menus
                 .forEach(item -> {
                     menuBar.add(item);
                 });
@@ -35,17 +35,19 @@ public class MenuGenerator {
     public MenuGenerator defineMenus(List<String> fieldNames){
         fieldNames
                 .forEach(fieldName -> {
-                    menus.add(new JMenu(fieldName));
+                    JMenu currentMenu = new JMenu(fieldName);
+                    menus.add(currentMenu);
                 });
         return this;
     }
 
     public MenuGenerator defineMenuItemTo(String menuName, String fieldName) {
         menus
-                .forEach(currentMenu -> {
-                    if(currentMenu.getName().equals(menuName)) {
+                .forEach(menuElement -> {
+                    if(menuElement.getText().equals(menuName)){
                         JMenuItem field = new JMenuItem(fieldName);
-                        currentMenu.add(field);
+                        menuElement.add(field);
+                        menuItems.add(field);
                     }
                 });
         return this;
@@ -54,7 +56,7 @@ public class MenuGenerator {
     public MenuGenerator addActionListener(String fieldName, String listenerName){
         menuItems
                 .forEach(field -> {
-                    if(field.getName().equals(fieldName)){
+                    if(field.getText().equals(fieldName)){
                         field.addActionListener(getActionListener(listenerName));
                     }
                 });
